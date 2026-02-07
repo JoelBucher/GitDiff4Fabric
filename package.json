@@ -1,0 +1,49 @@
+{
+  "name": "git4fabric",
+  "displayName": "Fabric Auth Demo",
+  "description": "Minimal VS Code extension that logs into Microsoft and calls Fabric APIs",
+  "version": "0.0.1",
+  "publisher": "Joel Bucher",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:fabric-auth-demo.login"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+  "commands": [
+    {
+      "command": "fabric-auth-demo.login",
+      "title": "Fabric: Login and List Workspaces"
+    }
+  ],
+  "authentication": [
+    {
+      "id": "my-msal",
+      "label": "Microsoft",
+      "scopes": [
+        "https://analysis.windows.net/powerbi/api/.default"
+      ],
+      "clientId": "63579afd-38cd-4349-899b-b4ff99de721f"
+    }
+  ]
+},
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/node-fetch": "^2.6.13",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}
