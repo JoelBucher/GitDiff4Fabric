@@ -206,6 +206,35 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(downloadCommand);
 
+
+    const logoutCommand = vscode.commands.registerCommand('fabric-auth-demo.logout', async () => {
+        try {
+            // 1. Find the existing session for the 'microsoft' provider
+            // We set createIfNone to false because we only want to find existing ones, not login
+            const session = await vscode.authentication.getSession('microsoft', 
+                ['https://analysis.windows.net/powerbi/api/.default'], 
+                { createIfNone: false }
+            );
+
+            if (session) {
+                // 2. Remove the session
+                // This clears the token from the VS Code secret store for your extension
+                await (vscode.authentication as any).getSession('microsoft', 
+                    ['https://analysis.windows.net/powerbi/api/.default'], 
+                    { clearSession: true }
+                );
+                
+                vscode.window.showInformationMessage(`Logged out of ${session.account.label} successfully.`);
+            } else {
+                vscode.window.showInformationMessage("You are not currently logged in.");
+            }
+        } catch (err: any) {
+            vscode.window.showErrorMessage(`Logout failed: ${err.message}`);
+        }
+    });
+
+    context.subscriptions.push(logoutCommand);
+
 }
 
 export function deactivate() {}
