@@ -1,9 +1,14 @@
 {
   "name": "gitdiff4fabric",
   "displayName": "GitDiff4Fabric",
-  "description": "Minimal VS Code extension that lets you diff workspaces.",
-  "version": "0.0.1",
-  "publisher": "joel-bucher",
+  "description": "Minimal VS Code extension that lets you diff Fabric workspaces.",
+  "version": "0.0.2",
+  "publisher": "JoelBucher",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JoelBucher/GitDiff4Fabric"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
