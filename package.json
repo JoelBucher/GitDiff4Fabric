@@ -23,11 +23,7 @@
       {
         "command": "fabric-auth-demo.downloadNotebooks",
         "title": "GitDiff4Fabric: Download Notebooks"
-      },
-      {
-      "command": "fabric-auth-demo.gitStatus",
-      "title": "GitDiff4Fabric: Check Git Status"
-    }
+      }
     ]
   },
   "scripts": {
