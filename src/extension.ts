@@ -3,66 +3,9 @@ import fetch from 'node-fetch';
 import * as fs from 'fs';
 import * as path from 'path';
 
-interface WorkspacePick extends vscode.QuickPickItem {
-    id: string;
-}
-
 export function activate(context: vscode.ExtensionContext) {
-    const disposable = vscode.commands.registerCommand(
-        'fabric-auth-demo.login',
-        async () => {
-            try {
-                // Step 1: Get Microsoft session
-                const session = await vscode.authentication.getSession(
-                    'microsoft',
-                    ['https://analysis.windows.net/powerbi/api/.default'],
-                    { createIfNone: true }
-                );
 
-                if (!session) {
-                    vscode.window.showErrorMessage('Login failed.');
-                    return;
-                }
-
-                const token = session.accessToken;
-
-                // Step 2: Call Fabric (Power BI) API
-                const response = await fetch(
-                    'https://api.powerbi.com/v1.0/myorg/groups',
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
-                );
-
-                if (!response.ok) {
-                    const text = await response.text();
-                    vscode.window.showErrorMessage(
-                        `API error: ${response.status} ${text}`
-                    );
-                    return;
-                }
-
-                const data = await response.json();
-
-                // Step 3: Show result
-                const workspaceCount = data.value?.length ?? 0;
-
-                vscode.window.showInformationMessage(
-                    `Logged in as ${session.account.label}. Found ${workspaceCount} workspaces.`
-                );
-            } catch (err: any) {
-                vscode.window.showErrorMessage(
-                    `Error: ${err.message || err}`
-                );
-            }
-        }
-    );
-
-    context.subscriptions.push(disposable);
-
-    const downloadCommand = vscode.commands.registerCommand('fabric-auth-demo.downloadNotebooks', async () => {
+    const compareCommand = vscode.commands.registerCommand('git-diff-4-fabric.compare', async () => {
         try {
             const session = await vscode.authentication.getSession('microsoft', 
                 ['https://analysis.windows.net/powerbi/api/.default'], 
@@ -204,37 +147,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    context.subscriptions.push(downloadCommand);
-
-
-    const logoutCommand = vscode.commands.registerCommand('fabric-auth-demo.logout', async () => {
-        try {
-            // 1. Find the existing session for the 'microsoft' provider
-            // We set createIfNone to false because we only want to find existing ones, not login
-            const session = await vscode.authentication.getSession('microsoft', 
-                ['https://analysis.windows.net/powerbi/api/.default'], 
-                { createIfNone: false }
-            );
-
-            if (session) {
-                // 2. Remove the session
-                // This clears the token from the VS Code secret store for your extension
-                await (vscode.authentication as any).getSession('microsoft', 
-                    ['https://analysis.windows.net/powerbi/api/.default'], 
-                    { clearSession: true }
-                );
-                
-                vscode.window.showInformationMessage(`Logged out of ${session.account.label} successfully.`);
-            } else {
-                vscode.window.showInformationMessage("You are not currently logged in.");
-            }
-        } catch (err: any) {
-            vscode.window.showErrorMessage(`Logout failed: ${err.message}`);
-        }
-    });
-
-    context.subscriptions.push(logoutCommand);
-
+    context.subscriptions.push(compareCommand);
+    
 }
 
 export function deactivate() {}

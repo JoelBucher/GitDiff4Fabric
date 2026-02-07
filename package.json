@@ -16,22 +16,14 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:fabric-auth-demo.login"
+    "onCommand:git-diff-4-fabric.login"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "fabric-auth-demo.login",
-        "title": "GitDiff4Fabric: Login"
-      },
-      {
-        "command": "fabric-auth-demo.downloadNotebooks",
-        "title": "GitDiff4Fabric: Download Notebooks"
-      },
-      {
-        "command": "fabric-auth-demo.logout",
-        "title": "GitDiff4Fabric: Logout"
+        "command": "git-diff-4-fabric.compare",
+        "title": "GitDiff4Fabric: Compare Directory to Workspace"
       }
     ]
   },
