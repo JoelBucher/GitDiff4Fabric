@@ -164,6 +164,104 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(downloadCommand);
+
+    const gitStatusCommand = vscode.commands.registerCommand('fabric-auth-demo.gitStatus', async () => {
+        try {
+            const session = await vscode.authentication.getSession('microsoft', 
+                ['https://analysis.windows.net/powerbi/api/.default'], 
+                { createIfNone: true }
+            );
+
+            // 1. Get Workspace List
+            const wsResponse = await fetch('https://api.powerbi.com/v1.0/myorg/groups', {
+                headers: { Authorization: `Bearer ${session.accessToken}` }
+            });
+            const wsData: any = await wsResponse.json();
+            
+            const selectedWs = await vscode.window.showQuickPick(
+                wsData.value.map((ws: any) => ({ label: ws.name, id: ws.id })),
+                { placeHolder: 'Select a workspace to check Git status' }
+            ) as any;
+
+            if (!selectedWs) return;
+
+            await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "Checking Fabric Git Status...",
+                cancellable: false
+            }, async (progress) => {
+
+                // 2. Fetch both Git Status AND the Full Item List in parallel
+                // We fetch the item list so we can map IDs to real Names
+                const [statusRes, itemsRes] = await Promise.all([
+                    fetch(`https://api.fabric.microsoft.com/v1/workspaces/${selectedWs.id}/git/status`, {
+                        headers: { Authorization: `Bearer ${session.accessToken}` }
+                    }),
+                    fetch(`https://api.fabric.microsoft.com/v1/workspaces/${selectedWs.id}/items`, {
+                        headers: { Authorization: `Bearer ${session.accessToken}` }
+                    })
+                ]);
+
+                if (statusRes.status === 404) {
+                    throw new Error("Git is not configured for this workspace.");
+                }
+
+                const statusData: any = await statusRes.json();
+                const itemsData: any = await itemsRes.json();
+                
+                const changes = statusData.changes || [];
+                const workspaceItems = itemsData.value || [];
+
+                if (changes.length === 0) {
+                    vscode.window.showInformationMessage("Workspace is perfectly synced with Git!");
+                    return;
+                }
+
+                // 3. Build a lookup map for names
+                const nameMap = new Map(workspaceItems.map((i: any) => [i.id, i.displayName]));
+                
+                console.log(changes)
+
+                const objectId = changes.map((c: any) => c["itemMetadata"]["itemIdentifier"]["objectId"])
+                console.log(objectId)
+
+                // 4. Map the changes to QuickPick items
+                const changeList = changes.map((c: any) => {
+                    // Try to get name from the status itself, then the map, then fallback to ID
+                    const name = c.itemDisplayName || nameMap.get(c.itemId) || c.logicalId || "New/Deleted Item";
+                    const type = c.itemType || "Unknown Type";
+                    
+                    let icon = "$(diff)"; // Default for 'Different'
+                    let detailStatus = "Modified";
+
+                    if (c.status === 'SourceOnly') {
+                        icon = "$(add)";
+                        detailStatus = "New in Fabric (Not in Git)";
+                    } else if (c.status === 'TargetOnly') {
+                        icon = "$(remove)";
+                        detailStatus = "In Git (Not in Fabric)";
+                    }
+
+                    return {
+                        label: `${icon} ${name}`,
+                        description: type,
+                        detail: `Status: ${detailStatus} | ID: ${c.itemId || 'N/A'}`,
+                        alwaysShow: true
+                    };
+                });
+
+                // 5. Show the result
+                await vscode.window.showQuickPick(changeList, {
+                    placeHolder: `Found ${changes.length} items with active changes in ${selectedWs.label}`
+                });
+            });
+
+        } catch (err: any) {
+            vscode.window.showErrorMessage(`Git Status Error: ${err.message}`);
+        }
+    });
+
+    context.subscriptions.push(gitStatusCommand);
 }
 
 export function deactivate() {}
