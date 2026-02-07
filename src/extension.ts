@@ -206,54 +206,18 @@ export function activate(context: vscode.ExtensionContext) {
                     throw new Error("Git is not configured for this workspace.");
                 }
 
-                const statusData: any = await statusRes.json();
-                const itemsData: any = await itemsRes.json();
-                
+                const statusData: any = await statusRes.json();                
                 const changes = statusData.changes || [];
-                const workspaceItems = itemsData.value || [];
 
                 if (changes.length === 0) {
                     vscode.window.showInformationMessage("Workspace is perfectly synced with Git!");
                     return;
                 }
 
-                // 3. Build a lookup map for names
-                const nameMap = new Map(workspaceItems.map((i: any) => [i.id, i.displayName]));
-                
                 console.log(changes)
 
                 const objectId = changes.map((c: any) => c["itemMetadata"]["itemIdentifier"]["objectId"])
                 console.log(objectId)
-
-                // 4. Map the changes to QuickPick items
-                const changeList = changes.map((c: any) => {
-                    // Try to get name from the status itself, then the map, then fallback to ID
-                    const name = c.itemDisplayName || nameMap.get(c.itemId) || c.logicalId || "New/Deleted Item";
-                    const type = c.itemType || "Unknown Type";
-                    
-                    let icon = "$(diff)"; // Default for 'Different'
-                    let detailStatus = "Modified";
-
-                    if (c.status === 'SourceOnly') {
-                        icon = "$(add)";
-                        detailStatus = "New in Fabric (Not in Git)";
-                    } else if (c.status === 'TargetOnly') {
-                        icon = "$(remove)";
-                        detailStatus = "In Git (Not in Fabric)";
-                    }
-
-                    return {
-                        label: `${icon} ${name}`,
-                        description: type,
-                        detail: `Status: ${detailStatus} | ID: ${c.itemId || 'N/A'}`,
-                        alwaysShow: true
-                    };
-                });
-
-                // 5. Show the result
-                await vscode.window.showQuickPick(changeList, {
-                    placeHolder: `Found ${changes.length} items with active changes in ${selectedWs.label}`
-                });
             });
 
         } catch (err: any) {
