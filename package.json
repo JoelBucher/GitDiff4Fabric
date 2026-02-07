@@ -1,9 +1,9 @@
 {
-  "name": "git4fabric",
-  "displayName": "Fabric Auth Demo",
-  "description": "Minimal VS Code extension that logs into Microsoft and calls Fabric APIs",
+  "name": "gitdiff4fabric",
+  "displayName": "GitDiff4Fabric",
+  "description": "Minimal VS Code extension that lets you diff workspaces.",
   "version": "0.0.1",
-  "publisher": "Joel Bucher",
+  "publisher": "joel-bucher",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -15,17 +15,17 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-  "commands": [
-    {
-      "command": "fabric-auth-demo.login",
-      "title": "Fabric: Login and List Workspaces"
-    },
-    {
-      "command": "fabric-auth-demo.downloadNotebooks",
-      "title": "Fabric: Download Notebooks"
-    }
-  ]
-},
+    "commands": [
+      {
+        "command": "fabric-auth-demo.login",
+        "title": "GitDiff4Fabric: Login"
+      },
+      {
+        "command": "fabric-auth-demo.downloadNotebooks",
+        "title": "GitDiff4Fabric: Download Notebooks"
+      }
+    ]
+  },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
@@ -35,6 +35,7 @@
     "@types/node": "^20.11.19",
     "@types/node-fetch": "^2.6.13",
     "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.7.1",
     "typescript": "^5.3.3"
   },
   "dependencies": {
