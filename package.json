@@ -19,6 +19,10 @@
     {
       "command": "fabric-auth-demo.login",
       "title": "Fabric: Login and List Workspaces"
+    },
+    {
+      "command": "fabric-auth-demo.downloadNotebooks",
+      "title": "Fabric: Download Notebooks"
     }
   ]
 },
