@@ -44,7 +44,7 @@ function activate(context) {
     const disposable = vscode.commands.registerCommand('fabric-auth-demo.login', async () => {
         try {
             // Step 1: Get Microsoft session
-            const session = await vscode.authentication.getSession('my-msal', ['https://analysis.windows.net/powerbi/api/.default'], { createIfNone: true });
+            const session = await vscode.authentication.getSession('microsoft', ['https://analysis.windows.net/powerbi/api/.default'], { createIfNone: true });
             if (!session) {
                 vscode.window.showErrorMessage('Login failed.');
                 return;

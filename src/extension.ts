@@ -8,7 +8,7 @@ export function activate(context: vscode.ExtensionContext) {
             try {
                 // Step 1: Get Microsoft session
                 const session = await vscode.authentication.getSession(
-                    'my-msal',
+                    'microsoft',
                     ['https://analysis.windows.net/powerbi/api/.default'],
                     { createIfNone: true }
                 );
