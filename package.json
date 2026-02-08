@@ -42,6 +42,11 @@
       {
         "command": "git-diff-4-fabric.checkoutHead",
         "title": "Checkout Fabric Workspace HEAD"
+      },
+      {
+        "command": "fabricGitStatus.refresh",
+        "title": "Refresh Fabric Status",
+        "icon": "$(refresh)"
       }
     ],
     "viewsContainers": {
@@ -72,13 +77,11 @@
           "command": "pbiWorkspaces.refreshEntry",
           "when": "view == pbiWorkspaces",
           "group": "navigation"
-        }
-      ],
-      "view/item/context": [
+        },
         {
-          "command": "git-diff-4-fabric.download",
-          "when": "view == pbiWorkspaces && viewItem == workspace",
-          "group": "inline"
+          "command": "fabricGitStatus.refresh",
+          "when": "view == yourViewIdHere",
+          "group": "navigation"
         }
       ]
     }

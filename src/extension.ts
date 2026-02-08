@@ -25,6 +25,12 @@ export function activate(context: vscode.ExtensionContext) {
         gitProvider.refresh(node.workspaceId);
     });
 
+    let refreshCommand = vscode.commands.registerCommand('fabricGitStatus.refresh', () => {
+        gitProvider.refresh();
+    });
+
+    context.subscriptions.push(refreshCommand);
+
     vscode.commands.registerCommand('git-diff-4-fabric.checkoutHead', async (workspaceId: string, headHash: string) => {
         if (!headHash) {
             vscode.window.showErrorMessage("No HEAD hash found for this workspace.");

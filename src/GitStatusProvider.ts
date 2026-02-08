@@ -19,15 +19,19 @@ export class GitStatusProvider implements vscode.TreeDataProvider<GitItem> {
     private activeWorkspaceId: string | undefined;
     private cachedChanges: any[] = [];
 
+    /**
+     * Refreshes the tree. 
+     * If workspaceId is provided, it updates the target.
+     * Otherwise, it just clears the cache and re-runs getChildren.
+     */
     refresh(workspaceId?: string): void {
-        this.activeWorkspaceId = workspaceId;
+        if (workspaceId) {
+            this.activeWorkspaceId = workspaceId;
+        }
         this.cachedChanges = [];
         this._onDidChangeTreeData.fire();
     }
 
-    /**
-     * Helper to get the current local Git HEAD SHA
-     */
     private getLocalHead(): string | undefined {
         try {
             const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
@@ -41,7 +45,10 @@ export class GitStatusProvider implements vscode.TreeDataProvider<GitItem> {
     getTreeItem(element: GitItem): vscode.TreeItem { return element; }
 
     async getChildren(element?: GitItem): Promise<GitItem[]> {
-        if (!this.activeWorkspaceId) return [];
+        // If we don't have a workspace ID yet, show a helpful message
+        if (!this.activeWorkspaceId) {
+            return [new GitItem("No Fabric Workspace Selected", "info")];
+        }
 
         if (element && element.contextValue === 'changes-parent') {
             return this.cachedChanges.map((c: any) => {
@@ -60,7 +67,7 @@ export class GitStatusProvider implements vscode.TreeDataProvider<GitItem> {
         const session = await vscode.authentication.getSession('microsoft',
             ['https://analysis.windows.net/powerbi/api/.default'], { createIfNone: false });
 
-        if (!session) return [];
+        if (!session) return [new GitItem("Please Sign In", "account")];
 
         try {
             const statusRes = await fetch(`https://api.fabric.microsoft.com/v1/workspaces/${this.activeWorkspaceId}/git/status`, {
@@ -76,40 +83,7 @@ export class GitStatusProvider implements vscode.TreeDataProvider<GitItem> {
 
             const items: GitItem[] = [];
 
-            // --- Logic for Conditional Button ---
-            // 1. We removed the "HEAD: ..." header as requested.
-            
-            if (workspaceHead && localHead === workspaceHead) {
-                // Show Green "Show Git Diff" Button
-                const diffBtn = new GitItem(
-                    "Show Git Diff",
-                    "diff",
-                    undefined,
-                    "button",
-                    new vscode.ThemeColor('charts.green')
-                );
-                diffBtn.command = {
-                    command: 'git-diff-4-fabric.showDiff', // Ensure this command is registered
-                    title: 'Show Git Diff'
-                };
-                items.push(diffBtn);
-            } else {
-                // Show Blue "Checkout" Button
-                const checkoutBtn = new GitItem(
-                    "Checkout Fabric Workspace HEAD",
-                    "cloud-download",
-                    undefined,
-                    "button",
-                    new vscode.ThemeColor('charts.blue')
-                );
-                checkoutBtn.command = {
-                    command: 'git-diff-4-fabric.checkoutHead',
-                    title: 'Checkout HEAD',
-                    arguments: [this.activeWorkspaceId, workspaceHead]
-                };
-                items.push(checkoutBtn);
-            }
-
+            // 1. Changes at the top
             if (this.cachedChanges.length > 0) {
                 const changesFolder = new GitItem(
                     `Changes (${this.cachedChanges.length})`,
@@ -120,7 +94,22 @@ export class GitStatusProvider implements vscode.TreeDataProvider<GitItem> {
                 changesFolder.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
                 items.push(changesFolder);
             } else {
-                items.push(new GitItem("Synced with Git", "check"));
+                items.push(new GitItem("Synced with Git", "check", undefined, undefined, new vscode.ThemeColor('charts.green')));
+            }
+
+            // 2. Action Button at the bottom
+            if (workspaceHead && localHead === workspaceHead) {
+                const diffBtn = new GitItem("Show Git Diff", "diff", undefined, "button", new vscode.ThemeColor('charts.green'));
+                diffBtn.command = { command: 'git-diff-4-fabric.showDiff', title: 'Show Git Diff' };
+                items.push(diffBtn);
+            } else {
+                const checkoutBtn = new GitItem("Checkout Fabric Workspace HEAD", "cloud-download", undefined, "button", new vscode.ThemeColor('charts.blue'));
+                checkoutBtn.command = {
+                    command: 'git-diff-4-fabric.checkoutHead',
+                    title: 'Checkout HEAD',
+                    arguments: [this.activeWorkspaceId, workspaceHead]
+                };
+                items.push(checkoutBtn);
             }
 
             return items;
