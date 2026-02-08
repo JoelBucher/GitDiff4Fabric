@@ -80,7 +80,7 @@
         },
         {
           "command": "fabricGitStatus.refresh",
-          "when": "view == yourViewIdHere",
+          "when": "view == pbiGitStatus",
           "group": "navigation"
         }
       ]
