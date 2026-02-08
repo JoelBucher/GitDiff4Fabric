@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export class PowerBIProvider implements vscode.TreeDataProvider<WorkspaceItem> {
+export class WorkspaceProvider implements vscode.TreeDataProvider<WorkspaceItem> {
     private _onDidChangeTreeData = new vscode.EventEmitter<WorkspaceItem | undefined | null | void>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 

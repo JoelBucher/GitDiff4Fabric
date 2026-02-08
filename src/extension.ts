@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import fetch from 'node-fetch';
 import * as fs from 'fs';
 import * as path from 'path';
-import { PowerBIProvider, WorkspaceItem } from './PowerBiProvider';
+import { WorkspaceProvider, WorkspaceItem } from './WorkspaceProvider';
 import { GitStatusProvider } from './GitStatusProvider';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -10,7 +10,7 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 export function activate(context: vscode.ExtensionContext) {
-    const pbiProvider = new PowerBIProvider();
+    const pbiProvider = new WorkspaceProvider();
     const gitProvider = new GitStatusProvider();
 
     vscode.window.registerTreeDataProvider('pbiWorkspaces', pbiProvider);
