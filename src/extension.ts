@@ -2,13 +2,18 @@ import * as vscode from 'vscode';
 import fetch from 'node-fetch';
 import * as fs from 'fs';
 import * as path from 'path';
-import { MyDataProvider } from './DataProvider';
+import { PowerBIProvider } from './PowerBiProvider';
 
 export function activate(context: vscode.ExtensionContext) {
-    const treeDataProvider = new MyDataProvider();
-    vscode.window.registerTreeDataProvider('my-tree-view', treeDataProvider);
+    const pbiProvider = new PowerBIProvider();
+    vscode.window.registerTreeDataProvider('pbiWorkspaces', pbiProvider);
+    context.subscriptions.push(
+        vscode.commands.registerCommand('pbiWorkspaces.refreshEntry', () => 
+            pbiProvider.refresh()
+        )
+    );
 
-    const compareCommand = vscode.commands.registerCommand('git-diff-4-fabric.compare', async () => {
+    const downloadCommand = vscode.commands.registerCommand('git-diff-4-fabric.download', async () => {
         try {
             const session = await vscode.authentication.getSession('microsoft', 
                 ['https://analysis.windows.net/powerbi/api/.default'], 
@@ -158,7 +163,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    context.subscriptions.push(compareCommand);
+    context.subscriptions.push(downloadCommand);
 
 }
 

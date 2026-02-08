@@ -22,24 +22,50 @@
   "contributes": {
     "commands": [
       {
-        "command": "git-diff-4-fabric.compare",
-        "title": "GitDiff4Fabric: Compare Directory to Workspace"
+        "command": "git-diff-4-fabric.download",
+        "title": "GitDiff4Fabric: Download Workspace"
+      },
+      {
+        "command": "pbiWorkspaces.refreshEntry",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "pbiWorkspaces.download",
+        "title": "Download All Items",
+        "icon": "$(cloud-download)"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "git-diff-4-sidebar",
-          "title": "GitDiff4Fabric",
-          "icon": "icon.png" 
+          "id": "workspace-explorer",
+          "title": "Power BI",
+          "icon": "$(graph)"
         }
       ]
     },
     "views": {
-      "git-diff-4-sidebar": [
+      "workspace-explorer": [
         {
-          "id": "my-tree-view",
-          "name": "Commands & Actions"
+          "id": "pbiWorkspaces",
+          "name": "Workspaces"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "pbiWorkspaces.refreshEntry",
+          "when": "view == pbiWorkspaces",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "git-diff-4-fabric.download",
+          "when": "view == pbiWorkspaces && viewItem == workspace",
+          "group": "inline"
         }
       ]
     }
