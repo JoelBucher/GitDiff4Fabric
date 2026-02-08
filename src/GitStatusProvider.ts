@@ -19,11 +19,6 @@ export class GitStatusProvider implements vscode.TreeDataProvider<GitItem> {
     private activeWorkspaceId: string | undefined;
     private cachedChanges: any[] = [];
 
-    /**
-     * Refreshes the tree. 
-     * If workspaceId is provided, it updates the target.
-     * Otherwise, it just clears the cache and re-runs getChildren.
-     */
     refresh(workspaceId?: string): void {
         if (workspaceId) {
             this.activeWorkspaceId = workspaceId;
@@ -94,16 +89,22 @@ export class GitStatusProvider implements vscode.TreeDataProvider<GitItem> {
                 changesFolder.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
                 items.push(changesFolder);
             } else {
-                items.push(new GitItem("Synced with Git", "arrow-swap", undefined, undefined, new vscode.ThemeColor('charts.green')));
+                items.push(new GitItem("Synced with Git", "check", undefined, undefined, new vscode.ThemeColor('charts.white')));
             }
 
             // 2. Action Button at the bottom
             if (workspaceHead && localHead === workspaceHead) {
                 const diffBtn = new GitItem("Show Git Diff", "arrow-swap", undefined, "button", new vscode.ThemeColor('charts.green'));
-                diffBtn.command = { command: 'git-diff-4-fabric.showDiff', title: 'Show Git Diff' };
+
+                const objectIdsWithChanges = this.cachedChanges.map(c => c.itemMetadata.itemIdentifier.objectId)
+                diffBtn.command = {
+                    command: 'git-diff-4-fabric.download',
+                    title: 'Show Git Diff',
+                    arguments: [this.activeWorkspaceId, objectIdsWithChanges]
+                };
                 items.push(diffBtn);
             } else {
-                const checkoutBtn = new GitItem("Sync Local Git Repo", "git-branch-conflicts", undefined, "button", new vscode.ThemeColor('charts.blue'));
+                const checkoutBtn = new GitItem("Sync Local Git Repo", "git-branch", undefined, "button", new vscode.ThemeColor('charts.blue'));
                 checkoutBtn.command = {
                     command: 'git-diff-4-fabric.checkoutHead',
                     title: 'Checkout HEAD',
