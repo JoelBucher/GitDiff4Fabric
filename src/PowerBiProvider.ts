@@ -54,5 +54,11 @@ export class WorkspaceItem extends vscode.TreeItem {
         
         // This 'contextValue' matches the 'when' clause in package.json
         this.contextValue = 'workspace';
+
+        this.command = {
+            command: 'pbiWorkspaces.selectWorkspace',
+            title: 'Select Workspace',
+            arguments: [this]
+        };
     }
 }

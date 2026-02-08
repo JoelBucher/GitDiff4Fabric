@@ -2,16 +2,25 @@ import * as vscode from 'vscode';
 import fetch from 'node-fetch';
 import * as fs from 'fs';
 import * as path from 'path';
-import { PowerBIProvider } from './PowerBiProvider';
+import { PowerBIProvider, WorkspaceItem } from './PowerBiProvider';
+import { GitStatusProvider } from './GitStatusProvider';
+
 
 export function activate(context: vscode.ExtensionContext) {
     const pbiProvider = new PowerBIProvider();
+    const gitProvider = new GitStatusProvider();
+
     vscode.window.registerTreeDataProvider('pbiWorkspaces', pbiProvider);
-    context.subscriptions.push(
-        vscode.commands.registerCommand('pbiWorkspaces.refreshEntry', () => 
-            pbiProvider.refresh()
-        )
-    );
+    vscode.window.registerTreeDataProvider('pbiGitStatus', gitProvider);
+
+    // Command triggered when clicking a Workspace in the first pane
+    vscode.commands.registerCommand('pbiWorkspaces.selectWorkspace', (node: WorkspaceItem) => {
+        // 1. Show the Git Status pane (via the 'when' clause in package.json)
+        vscode.commands.executeCommand('setContext', 'pbiWorkspaceSelected', true);
+        
+        // 2. Tell the second provider to load data for this ID
+        gitProvider.refresh(node.workspaceId);
+    });
 
     const downloadCommand = vscode.commands.registerCommand('git-diff-4-fabric.download', async () => {
         try {

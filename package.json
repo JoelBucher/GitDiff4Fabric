@@ -34,6 +34,10 @@
         "command": "pbiWorkspaces.download",
         "title": "Download All Items",
         "icon": "$(cloud-download)"
+      },
+      {
+        "command": "pbiWorkspaces.selectWorkspace",
+        "title": "Select Workspace"
       }
     ],
     "viewsContainers": {
@@ -50,6 +54,11 @@
         {
           "id": "pbiWorkspaces",
           "name": "Workspaces"
+        },
+        {
+          "id": "pbiGitStatus",
+          "name": "Fabric Git Status",
+          "when": "pbiWorkspaceSelected"
         }
       ]
     },
@@ -64,7 +73,7 @@
       "view/item/context": [
         {
           "command": "git-diff-4-fabric.download",
-          "when": "view == pbiWorkspaces && viewItem == workspace",
+          "when": "view == pbiWorkspaces",
           "group": "inline"
         }
       ]
