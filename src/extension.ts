@@ -48,8 +48,16 @@ export function activate(context: vscode.ExtensionContext) {
                     throw new Error("Git is not configured for this workspace.");
                 }
 
-                const statusData: any = await statusRes.json();                
+                const statusData: any = await statusRes.json();        
+                console.log(statusData)
                 const changes = statusData.changes || [];
+                const workspaceHead = statusData["workspaceHead"]
+                console.log(workspaceHead)
+
+                const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+                const git = gitExtension?.getAPI(1);
+                console.log(git)
+
 
                 if (changes.length === 0) {
                     vscode.window.showInformationMessage("Workspace is perfectly synced with Git!");
@@ -85,7 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
                     if(!itemIdsWithChanges.includes(item.id)) continue;
 
                     console.log(item)
-                    progress.report({ message: `Processing ${item.displayName}...` });
+                    progress.report({ message: `${item.displayName}...` });
 
                     // Start the Get Definition job
                     let defResponse = await fetch(
@@ -148,7 +156,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(compareCommand);
-    
+
 }
 
 export function deactivate() {}
