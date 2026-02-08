@@ -94,16 +94,16 @@ export class GitStatusProvider implements vscode.TreeDataProvider<GitItem> {
                 changesFolder.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
                 items.push(changesFolder);
             } else {
-                items.push(new GitItem("Synced with Git", "check", undefined, undefined, new vscode.ThemeColor('charts.green')));
+                items.push(new GitItem("Synced with Git", "arrow-swap", undefined, undefined, new vscode.ThemeColor('charts.green')));
             }
 
             // 2. Action Button at the bottom
             if (workspaceHead && localHead === workspaceHead) {
-                const diffBtn = new GitItem("Show Git Diff", "diff", undefined, "button", new vscode.ThemeColor('charts.green'));
+                const diffBtn = new GitItem("Show Git Diff", "arrow-swap", undefined, "button", new vscode.ThemeColor('charts.green'));
                 diffBtn.command = { command: 'git-diff-4-fabric.showDiff', title: 'Show Git Diff' };
                 items.push(diffBtn);
             } else {
-                const checkoutBtn = new GitItem("Checkout Fabric Workspace HEAD", "cloud-download", undefined, "button", new vscode.ThemeColor('charts.blue'));
+                const checkoutBtn = new GitItem("Sync Local Git Repo", "git-branch-conflicts", undefined, "button", new vscode.ThemeColor('charts.blue'));
                 checkoutBtn.command = {
                     command: 'git-diff-4-fabric.checkoutHead',
                     title: 'Checkout HEAD',

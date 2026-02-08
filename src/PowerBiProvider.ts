@@ -51,6 +51,8 @@ export class WorkspaceItem extends vscode.TreeItem {
         super(label, collapsibleState);
         this.description = '';
         this.tooltip = `Workspace: ${this.label}`;
+
+        this.iconPath = new vscode.ThemeIcon('repo');
         
         // This 'contextValue' matches the 'when' clause in package.json
         this.contextValue = 'workspace';
