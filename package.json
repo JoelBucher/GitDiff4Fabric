@@ -26,7 +26,7 @@
         "title": "GitDiff4Fabric: Download Workspace"
       },
       {
-        "command": "pbiWorkspaces.refreshEntry",
+        "command": "pbiWorkspaces.refresh",
         "title": "Refresh",
         "icon": "$(refresh)"
       },
@@ -74,7 +74,7 @@
     "menus": {
       "view/title": [
         {
-          "command": "pbiWorkspaces.refreshEntry",
+          "command": "pbiWorkspaces.refresh",
           "when": "view == pbiWorkspaces",
           "group": "navigation"
         },

@@ -37,6 +37,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(refreshCommand);
 
+    let workspaceRefreshCommand = vscode.commands.registerCommand('pbiWorkspaces.refresh', () => {
+        pbiProvider.refresh();
+    });
+
+    context.subscriptions.push(workspaceRefreshCommand);
+
     vscode.commands.registerCommand('git-diff-4-fabric.checkoutHead', async (workspaceId: string, headHash: string) => {
         if (!headHash) {
             vscode.window.showErrorMessage("No HEAD hash found for this workspace.");
@@ -67,6 +73,8 @@ export function activate(context: vscode.ExtensionContext) {
                     await execAsync(`git checkout ${headHash}`, { cwd });
 
                     vscode.window.showInformationMessage(`Successfully checked out ${headHash}`);
+
+                    gitProvider.refresh();
                 } catch (error: any) {
                     vscode.window.showErrorMessage(`Git Error: ${error.message}`);
                 }
