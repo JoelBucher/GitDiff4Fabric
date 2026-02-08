@@ -73,7 +73,7 @@
       "view/item/context": [
         {
           "command": "git-diff-4-fabric.download",
-          "when": "view == pbiWorkspaces",
+          "when": "view == pbiWorkspaces && viewItem == workspace",
           "group": "inline"
         }
       ]
