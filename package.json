@@ -38,6 +38,10 @@
       {
         "command": "pbiWorkspaces.selectWorkspace",
         "title": "Select Workspace"
+      },
+      {
+        "command": "git-diff-4-fabric.checkoutHead",
+        "title": "Checkout Fabric Workspace HEAD"
       }
     ],
     "viewsContainers": {

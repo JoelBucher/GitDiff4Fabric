@@ -4,7 +4,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { PowerBIProvider, WorkspaceItem } from './PowerBiProvider';
 import { GitStatusProvider } from './GitStatusProvider';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
+const execAsync = promisify(exec);
 
 export function activate(context: vscode.ExtensionContext) {
     const pbiProvider = new PowerBIProvider();
@@ -20,6 +23,43 @@ export function activate(context: vscode.ExtensionContext) {
         
         // 2. Tell the second provider to load data for this ID
         gitProvider.refresh(node.workspaceId);
+    });
+
+    vscode.commands.registerCommand('git-diff-4-fabric.checkoutHead', async (workspaceId: string, headHash: string) => {
+        if (!headHash) {
+            vscode.window.showErrorMessage("No HEAD hash found for this workspace.");
+            return;
+        }
+
+        const confirm = await vscode.window.showWarningMessage(
+            `Are you sure you want to checkout HEAD (${headHash.substring(0, 7)})? This may overwrite local changes.`,
+            "Yes", "No"
+        );
+
+        if (confirm === "Yes") {
+            await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: `Syncing Fabric Workspace to ${headHash.substring(0, 7)}...`,
+                cancellable: false
+            }, async () => {
+                try {
+                    // Get the current workspace folder path
+                    const workspaceFolders = vscode.workspace.workspaceFolders;
+                    if (!workspaceFolders) {
+                        throw new Error("No workspace folder open.");
+                    }
+                    const cwd = workspaceFolders[0].uri.fsPath;
+
+                    // Run the actual git command
+                    // Note: Use 'git checkout' or 'git reset --hard' depending on your goal
+                    await execAsync(`git checkout ${headHash}`, { cwd });
+
+                    vscode.window.showInformationMessage(`Successfully checked out ${headHash}`);
+                } catch (error: any) {
+                    vscode.window.showErrorMessage(`Git Error: ${error.message}`);
+                }
+            });
+        }
     });
 
     const downloadCommand = vscode.commands.registerCommand('git-diff-4-fabric.download', async () => {
