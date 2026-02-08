@@ -26,14 +26,9 @@
         "title": "GitDiff4Fabric: Download Workspace"
       },
       {
-        "command": "pbiWorkspaces.refresh",
+        "command": "pbiWorkspaces.refreshWorkspaces",
         "title": "Refresh",
         "icon": "$(refresh)"
-      },
-      {
-        "command": "pbiWorkspaces.download",
-        "title": "Download All Items",
-        "icon": "$(cloud-download)"
       },
       {
         "command": "pbiWorkspaces.selectWorkspace",
@@ -44,7 +39,7 @@
         "title": "Checkout Fabric Workspace HEAD"
       },
       {
-        "command": "fabricGitStatus.refresh",
+        "command": "fabricGitStatus.refreshGitStatus",
         "title": "Refresh Fabric Status",
         "icon": "$(refresh)"
       }
@@ -53,7 +48,7 @@
       "activitybar": [
         {
           "id": "workspace-explorer",
-          "title": "Power BI",
+          "title": "Workspaces",
           "icon": "$(graph)"
         }
       ]
@@ -74,12 +69,12 @@
     "menus": {
       "view/title": [
         {
-          "command": "pbiWorkspaces.refresh",
+          "command": "pbiWorkspaces.refreshWorkspaces",
           "when": "view == pbiWorkspaces",
           "group": "navigation"
         },
         {
-          "command": "fabricGitStatus.refresh",
+          "command": "fabricGitStatus.refreshGitStatus",
           "when": "view == pbiGitStatus",
           "group": "navigation"
         }

@@ -31,13 +31,13 @@ export function activate(context: vscode.ExtensionContext) {
         gitProvider.refresh(node.workspaceId);
     });
 
-    let refreshCommand = vscode.commands.registerCommand('fabricGitStatus.refresh', () => {
+    let refreshCommand = vscode.commands.registerCommand('fabricGitStatus.refreshGitStatus', () => {
         gitProvider.refresh();
     });
 
     context.subscriptions.push(refreshCommand);
 
-    let workspaceRefreshCommand = vscode.commands.registerCommand('pbiWorkspaces.refresh', () => {
+    let workspaceRefreshCommand = vscode.commands.registerCommand('pbiWorkspaces.refreshWorkspaces', () => {
         pbiProvider.refresh();
     });
 

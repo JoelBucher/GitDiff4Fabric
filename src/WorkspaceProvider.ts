@@ -36,7 +36,7 @@ export class WorkspaceProvider implements vscode.TreeDataProvider<WorkspaceItem>
                 vscode.TreeItemCollapsibleState.None
             ));
         } catch (err) {
-            vscode.window.showErrorMessage(`Power BI Error: ${err}`);
+            vscode.window.showErrorMessage(`Fabric Workspace Error: ${err}`);
             return [];
         }
     }
