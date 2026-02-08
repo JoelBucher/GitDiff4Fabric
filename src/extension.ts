@@ -16,10 +16,16 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider('pbiWorkspaces', pbiProvider);
     vscode.window.registerTreeDataProvider('pbiGitStatus', gitProvider);
 
+    const gitStatusView = vscode.window.createTreeView('pbiGitStatus', {
+        treeDataProvider: gitProvider
+    });
+
     // Command triggered when clicking a Workspace in the first pane
     vscode.commands.registerCommand('pbiWorkspaces.selectWorkspace', (node: WorkspaceItem) => {
         // 1. Show the Git Status pane (via the 'when' clause in package.json)
         vscode.commands.executeCommand('setContext', 'pbiWorkspaceSelected', true);
+
+        gitStatusView.title = `${node.label}`;
         
         // 2. Tell the second provider to load data for this ID
         gitProvider.refresh(node.workspaceId);
