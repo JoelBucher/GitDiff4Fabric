@@ -25,7 +25,24 @@
         "command": "git-diff-4-fabric.compare",
         "title": "GitDiff4Fabric: Compare Directory to Workspace"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "git-diff-4-sidebar",
+          "title": "GitDiff4Fabric",
+          "icon": "icon.png" 
+        }
+      ]
+    },
+    "views": {
+      "git-diff-4-sidebar": [
+        {
+          "id": "my-tree-view",
+          "name": "Commands & Actions"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

@@ -2,8 +2,11 @@ import * as vscode from 'vscode';
 import fetch from 'node-fetch';
 import * as fs from 'fs';
 import * as path from 'path';
+import { MyDataProvider } from './DataProvider';
 
 export function activate(context: vscode.ExtensionContext) {
+    const treeDataProvider = new MyDataProvider();
+    vscode.window.registerTreeDataProvider('my-tree-view', treeDataProvider);
 
     const compareCommand = vscode.commands.registerCommand('git-diff-4-fabric.compare', async () => {
         try {
