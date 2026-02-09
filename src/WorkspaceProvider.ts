@@ -58,7 +58,7 @@ export class WorkspaceItem extends vscode.TreeItem {
         this.contextValue = 'workspace';
 
         this.command = {
-            command: 'pbiWorkspaces.selectWorkspace',
+            command: 'git-diff-4-fabric.selectWorkspace',
             title: 'Select Workspace',
             arguments: [this]
         };

@@ -10,20 +10,20 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 export function activate(context: vscode.ExtensionContext) {
-    const pbiProvider = new WorkspaceProvider();
+    const workspaceProvider = new WorkspaceProvider();
     const gitProvider = new GitStatusProvider();
 
-    vscode.window.registerTreeDataProvider('pbiWorkspaces', pbiProvider);
-    vscode.window.registerTreeDataProvider('pbiGitStatus', gitProvider);
+    vscode.window.registerTreeDataProvider('workspaces', workspaceProvider);
+    vscode.window.registerTreeDataProvider('workspaceGitStatus', gitProvider);
 
-    const gitStatusView = vscode.window.createTreeView('pbiGitStatus', {
+    const gitStatusView = vscode.window.createTreeView('workspaceGitStatus', {
         treeDataProvider: gitProvider
     });
 
     // Command triggered when clicking a Workspace in the first pane
-    vscode.commands.registerCommand('pbiWorkspaces.selectWorkspace', (node: WorkspaceItem) => {
+    vscode.commands.registerCommand('git-diff-4-fabric.selectWorkspace', (node: WorkspaceItem) => {
         // 1. Show the Git Status pane (via the 'when' clause in package.json)
-        vscode.commands.executeCommand('setContext', 'pbiWorkspaceSelected', true);
+        vscode.commands.executeCommand('setContext', 'workspaceselected', true);
 
         gitStatusView.title = `${node.label}`;
         
@@ -31,14 +31,14 @@ export function activate(context: vscode.ExtensionContext) {
         gitProvider.refresh(node.workspaceId);
     });
 
-    let refreshCommand = vscode.commands.registerCommand('fabricGitStatus.refreshGitStatus', () => {
+    let refreshCommand = vscode.commands.registerCommand('git-diff-4-fabric.refreshGitStatus', () => {
         gitProvider.refresh();
     });
 
     context.subscriptions.push(refreshCommand);
 
-    let workspaceRefreshCommand = vscode.commands.registerCommand('pbiWorkspaces.refreshWorkspaces', () => {
-        pbiProvider.refresh();
+    let workspaceRefreshCommand = vscode.commands.registerCommand('git-diff-4-fabric.refreshWorkspaces', () => {
+        workspaceProvider.refresh();
     });
 
     context.subscriptions.push(workspaceRefreshCommand);

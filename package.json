@@ -2,7 +2,7 @@
   "name": "gitdiff4fabric",
   "displayName": "GitDiff4Fabric",
   "description": "Minimal VS Code extension that lets you diff Fabric workspaces.",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "publisher": "JoelBucher",
   "license": "MIT",
   "repository": {
@@ -26,12 +26,12 @@
         "title": "GitDiff4Fabric: Download Workspace"
       },
       {
-        "command": "pbiWorkspaces.refreshWorkspaces",
+        "command": "git-diff-4-fabric.refreshWorkspaces",
         "title": "Refresh",
         "icon": "$(refresh)"
       },
       {
-        "command": "pbiWorkspaces.selectWorkspace",
+        "command": "git-diff-4-fabric.selectWorkspace",
         "title": "Select Workspace"
       },
       {
@@ -39,7 +39,7 @@
         "title": "Checkout Fabric Workspace HEAD"
       },
       {
-        "command": "fabricGitStatus.refreshGitStatus",
+        "command": "git-diff-4-fabric.refreshGitStatus",
         "title": "Refresh Fabric Status",
         "icon": "$(refresh)"
       }
@@ -56,26 +56,26 @@
     "views": {
       "workspace-explorer": [
         {
-          "id": "pbiWorkspaces",
+          "id": "workspaces",
           "name": "Workspaces"
         },
         {
-          "id": "pbiGitStatus",
+          "id": "workspaceGitStatus",
           "name": "Fabric Git Status",
-          "when": "pbiWorkspaceSelected"
+          "when": "workspaceselected"
         }
       ]
     },
     "menus": {
       "view/title": [
         {
-          "command": "pbiWorkspaces.refreshWorkspaces",
-          "when": "view == pbiWorkspaces",
+          "command": "git-diff-4-fabric.refreshWorkspaces",
+          "when": "view == workspaces",
           "group": "navigation"
         },
         {
-          "command": "fabricGitStatus.refreshGitStatus",
-          "when": "view == pbiGitStatus",
+          "command": "git-diff-4-fabric.refreshGitStatus",
+          "when": "view == workspaceGitStatus",
           "group": "navigation"
         }
       ]
