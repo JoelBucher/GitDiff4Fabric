@@ -49,7 +49,7 @@
         {
           "id": "workspace-explorer",
           "title": "Workspaces",
-          "icon": "$(graph)"
+          "icon": "icon.svg"
         }
       ]
     },
