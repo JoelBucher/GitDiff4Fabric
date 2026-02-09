@@ -10,10 +10,12 @@ GitDiff4Fabric is a VS Code extension for viewing and applying Git-backed change
 
 ## Commands
 
-- `Select Workspace`: Choose a Fabric workspace.
-- `Download Workspace`: Pull workspace files into the local directory.
-- `Checkout Fabric Workspace HEAD`: Sync local Git- with Fabric workspace State.
-- `Refresh`: Update workspace and status views.
+| Command                          | Description                                      |
+|----------------------------------|--------------------------------------------------|
+| `Select Workspace`               | Choose a Fabric workspace.                      |
+| `Download Workspace`             | Pull workspace files into the local directory.  |
+| `Checkout Fabric Workspace HEAD` | Sync local Git with Fabric workspace state.     |
+| `Refresh`                        | Update workspace and status views.              |
 
 ## Usage
 
