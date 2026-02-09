@@ -95,7 +95,24 @@ export function activate(context: vscode.ExtensionContext) {
                 cancellable: false
             }, async (progress) => {
 
-                // 2. Fetch ALL items (Notebooks, Reports, etc.)
+                // 1. Fetch Folders to build a lookup map
+                progress.report({ message: "Fetching folder structure..." });
+                const foldersResponse = await fetch(`https://api.fabric.microsoft.com/v1/workspaces/${selectedWsId}/folders`, {
+                    headers: { Authorization: `Bearer ${session.accessToken}` }
+                });
+                const foldersData: any = await foldersResponse.json();
+                
+                // Map: folderId -> displayName
+                const folderMap: { [key: string]: string } = {};
+                if (foldersData.value) {
+                    foldersData.value.forEach((f: any) => {
+                        folderMap[f.id] = f.displayName;
+                    });
+                }
+
+                console.log(foldersData)
+
+                // 2. Fetch ALL items
                 progress.report({ message: "Listing all items..." });
                 const itemsResponse = await fetch(`https://api.fabric.microsoft.com/v1/workspaces/${selectedWsId}/items`, {
                     headers: { Authorization: `Bearer ${session.accessToken}` }
@@ -107,11 +124,17 @@ export function activate(context: vscode.ExtensionContext) {
                 if (!rootPath) throw new Error("Open a folder in VS Code first.");
 
                 for (const item of allItems) {
-                    console.log(item)
                     if(!objectIdsWithChanges.includes(item.id)) continue;
-                    console.log("loading item...")
-
+                    
                     progress.report({ message: `${item.displayName}...` });
+
+                    // --- NEW LOGIC: Resolve Folder Name ---
+                    let parentPath = rootPath;
+                    if (item.folderId && folderMap[item.folderId]) {
+                        // If folderId exists and is in our map, add it to the path
+                        parentPath = path.join(rootPath, folderMap[item.folderId]);
+                    }
+                    // --------------------------------------
 
                     // Start the Get Definition job
                     let defResponse = await fetch(
@@ -119,7 +142,7 @@ export function activate(context: vscode.ExtensionContext) {
                         { method: 'POST', headers: { Authorization: `Bearer ${session.accessToken}` } }
                     );
 
-                    // Handle Long Running Operation
+                    // Handle Long Running Operation (202 Accepted)
                     if (defResponse.status === 202) {
                         const monitorUrl = defResponse.headers.get('Location');
                         if (monitorUrl) {
@@ -144,28 +167,25 @@ export function activate(context: vscode.ExtensionContext) {
                     const finalResult: any = await defResponse.json();
                     const parts = finalResult.definition?.parts || [];
 
-                    // 3. Create Item Folder: "MyNotebook.Notebook" or "MyReport.Report"
+                    // 3. Create Item Folder inside the resolved parent path
                     const itemFolderName = `${item.displayName}.${item.type}`;
-                    const itemFolderPath = path.join(rootPath, itemFolderName);
+                    const itemFolderPath = path.join(parentPath, itemFolderName);
                     
                     for (const part of parts) {
                         if (!part.payload) continue;
 
-                        // 4. Handle Subfolders within the item (e.g., "metadata/content.json")
                         const absoluteFilePath = path.join(itemFolderPath, part.path);
                         const directoryPath = path.dirname(absoluteFilePath);
 
-                        // Ensure the sub-directories exist
                         if (!fs.existsSync(directoryPath)) {
                             fs.mkdirSync(directoryPath, { recursive: true });
                         }
 
-                        // Decode and Write
                         const buffer = Buffer.from(part.payload, 'base64');
                         fs.writeFileSync(absoluteFilePath, buffer);
                     }
                 }
-                vscode.window.showInformationMessage(`Export complete! Check the 'fabric_export' folder.`);
+                vscode.window.showInformationMessage(`Export complete!`);
             });
 
         } catch (err: any) {
