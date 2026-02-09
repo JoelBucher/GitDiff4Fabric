@@ -91,29 +91,44 @@ export function activate(context: vscode.ExtensionContext) {
 
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: "Fabric: Downloading Workspace Content",
+                title: "Fabric: Syncing Workspace",
                 cancellable: false
             }, async (progress) => {
 
-                // 1. Fetch Folders to build a lookup map
-                progress.report({ message: "Fetching folder structure..." });
+                // 1. Fetch Folder Hierarchy
+                progress.report({ message: "Mapping folder structure..." });
                 const foldersResponse = await fetch(`https://api.fabric.microsoft.com/v1/workspaces/${selectedWsId}/folders`, {
                     headers: { Authorization: `Bearer ${session.accessToken}` }
                 });
                 const foldersData: any = await foldersResponse.json();
                 
-                // Map: folderId -> displayName
-                const folderMap: { [key: string]: string } = {};
+                // Build a metadata map: folderId -> { name, parentId }
+                const folderMetadata: { [key: string]: { name: string, parentId?: string } } = {};
                 if (foldersData.value) {
                     foldersData.value.forEach((f: any) => {
-                        folderMap[f.id] = f.displayName;
+                        folderMetadata[f.id] = { 
+                            name: f.displayName, 
+                            parentId: f.parentFolderId 
+                        };
                     });
                 }
 
-                console.log(foldersData)
+                /**
+                 * Recursive helper to resolve the full path from a folderId
+                 */
+                const getFullFolderPath = (folderId: string): string => {
+                    const folder = folderMetadata[folderId];
+                    if (!folder) return "";
+                    
+                    // If this folder has a parent, resolve the parent's path first
+                    if (folder.parentId && folderMetadata[folder.parentId]) {
+                        return path.join(getFullFolderPath(folder.parentId), folder.name);
+                    }
+                    return folder.name;
+                };
 
-                // 2. Fetch ALL items
-                progress.report({ message: "Listing all items..." });
+                // 2. Fetch Workspace Items
+                progress.report({ message: "Fetching item list..." });
                 const itemsResponse = await fetch(`https://api.fabric.microsoft.com/v1/workspaces/${selectedWsId}/items`, {
                     headers: { Authorization: `Bearer ${session.accessToken}` }
                 });
@@ -121,28 +136,28 @@ export function activate(context: vscode.ExtensionContext) {
                 const allItems = itemsData.value || [];
 
                 const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-                if (!rootPath) throw new Error("Open a folder in VS Code first.");
+                if (!rootPath) throw new Error("Please open a local folder in VS Code first.");
 
+                // 3. Process each item that has changes
                 for (const item of allItems) {
                     if(!objectIdsWithChanges.includes(item.id)) continue;
                     
-                    progress.report({ message: `${item.displayName}...` });
+                    progress.report({ message: `Downloading ${item.displayName}...` });
 
-                    // --- NEW LOGIC: Resolve Folder Name ---
-                    let parentPath = rootPath;
-                    if (item.folderId && folderMap[item.folderId]) {
-                        // If folderId exists and is in our map, add it to the path
-                        parentPath = path.join(rootPath, folderMap[item.folderId]);
+                    // Resolve the specific directory for this item
+                    let itemParentDir = rootPath;
+                    if (item.folderId) {
+                        const relativeHierarchy = getFullFolderPath(item.folderId);
+                        itemParentDir = path.join(rootPath, relativeHierarchy);
                     }
-                    // --------------------------------------
 
-                    // Start the Get Definition job
+                    // Start the Get Definition job (POST request)
                     let defResponse = await fetch(
                         `https://api.fabric.microsoft.com/v1/workspaces/${selectedWsId}/items/${item.id}/getDefinition`,
                         { method: 'POST', headers: { Authorization: `Bearer ${session.accessToken}` } }
                     );
 
-                    // Handle Long Running Operation (202 Accepted)
+                    // Handle Long Running Operation (Status 202)
                     if (defResponse.status === 202) {
                         const monitorUrl = defResponse.headers.get('Location');
                         if (monitorUrl) {
@@ -150,26 +165,32 @@ export function activate(context: vscode.ExtensionContext) {
                             while (!jobSucceeded) {
                                 const poll = await fetch(monitorUrl, { headers: { Authorization: `Bearer ${session.accessToken}` } });
                                 const jobData: any = await poll.json();
+                                
                                 if (jobData.status === 'Succeeded') {
                                     jobSucceeded = true;
                                     defResponse = await fetch(`${monitorUrl}/result`, { headers: { Authorization: `Bearer ${session.accessToken}` } });
                                 } else if (jobData.status === 'Failed') {
-                                    console.error(`Failed to export ${item.displayName}`);
-                                    break; 
+                                    throw new Error(`Fabric job failed for item: ${item.displayName}`);
+                                } else {
+                                    // Wait 2 seconds before polling again
+                                    await new Promise(r => setTimeout(r, 2000));
                                 }
-                                await new Promise(r => setTimeout(r, 2000));
                             }
                         }
                     }
 
-                    if (defResponse.status !== 200) continue;
+                    if (defResponse.status !== 200) {
+                        console.error(`Skipping ${item.displayName}: API returned status ${defResponse.status}`);
+                        continue;
+                    }
 
                     const finalResult: any = await defResponse.json();
                     const parts = finalResult.definition?.parts || [];
 
-                    // 3. Create Item Folder inside the resolved parent path
+                    // 4. Write parts to the recursive directory structure
+                    // Format: [Root]/[Folders...]/[ItemName].[ItemType]/[InternalPath]
                     const itemFolderName = `${item.displayName}.${item.type}`;
-                    const itemFolderPath = path.join(parentPath, itemFolderName);
+                    const itemFolderPath = path.join(itemParentDir, itemFolderName);
                     
                     for (const part of parts) {
                         if (!part.payload) continue;
@@ -177,19 +198,21 @@ export function activate(context: vscode.ExtensionContext) {
                         const absoluteFilePath = path.join(itemFolderPath, part.path);
                         const directoryPath = path.dirname(absoluteFilePath);
 
+                        // Recursively create directories for the path
                         if (!fs.existsSync(directoryPath)) {
                             fs.mkdirSync(directoryPath, { recursive: true });
                         }
 
+                        // Decode Base64 and save
                         const buffer = Buffer.from(part.payload, 'base64');
                         fs.writeFileSync(absoluteFilePath, buffer);
                     }
                 }
-                vscode.window.showInformationMessage(`Export complete!`);
+                vscode.window.showInformationMessage(`Successfully synced ${objectIdsWithChanges.length} items to your workspace.`);
             });
 
         } catch (err: any) {
-            vscode.window.showErrorMessage(`Error: ${err.message}`);
+            vscode.window.showErrorMessage(`Fabric Download Error: ${err.message}`);
         }
     });
 
